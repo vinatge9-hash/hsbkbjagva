@@ -1,0 +1,405 @@
+<!--  -->
+<!doctype html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CineScope — Movie Reviews</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body{font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+  </style>
+</head>
+<body style="font-family: 'Poppins', sans-serif;" class="bg-gray-900 text-gray-100 antialiased">
+  <!-- NAV -->
+  <header class="w-full max-w-none bg-gradient-to-r from-slate-900 via-indigo-900 to-sky-900 shadow-lg">
+    <div class="w-full max-w-none px-6 py-4 flex items-center justify-between">
+      <a href="#" onclick="window.parent.handlePreviewNavigation(\'index.html\'); return false;" class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-md bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-gray-900 font-bold animate-pulse">CS</div>
+        <div>
+          <h1 class="text-lg font-semibold leading-none">CineScope</h1>
+          <p class="text-xs text-gray-200 -mt-0.5">Curated movie reviews & ratings</p>
+        </div>
+      </a>
+
+      <nav class="space-x-4 hidden md:flex">
+        <a href="#" onclick="window.parent.handlePreviewNavigation(\'index.html\'); return false;" class="px-3 py-2 rounded hover:bg-white/10 transition">Home</a>
+        <a href="#" onclick="window.parent.handlePreviewNavigation(\'about.html\'); return false;" class="px-3 py-2 rounded hover:bg-white/10 transition">About</a>
+        <a href="#" onclick="window.parent.handlePreviewNavigation(\'contact.html\'); return false;" class="px-3 py-2 rounded hover:bg-white/10 transition">Contact</a>
+      </nav>
+
+      <div class="flex items-center space-x-3">
+        <input id="quickSearch" type="search" placeholder="Search movies..." class="w-40 md:w-64 bg-white/8 placeholder-gray-300 text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" />
+        <button id="themeToggle" class="px-3 py-2 bg-white/6 rounded hover:bg-white/12 transition text-sm">Toggle Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main class="w-full max-w-none px-6 pb-12">
+    <section class="w-full max-w-none mt-8 grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div class="lg:col-span-1 bg-gradient-to-b from-slate-800 to-slate-900 rounded-xl p-5 shadow-lg">
+        <h2 class="text-xl font-semibold">Filters</h2>
+        <div class="mt-4 space-y-4">
+          <div>
+            <label class="text-sm text-gray-300">Genre</label>
+            <select id="genreFilter" class="w-full mt-2 bg-white/6 rounded px-3 py-2 text-sm">
+              <option value="all">All Genres</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-sm text-gray-300">Minimum Rating</label>
+            <input id="minRating" type="range" min="0" max="5" step="0.5" value="0" class="w-full mt-2" />
+            <div class="text-sm text-gray-300 mt-1">Showing >= <span id="minRatingLabel">0</span> stars</div>
+          </div>
+
+          <div>
+            <label class="text-sm text-gray-300">Sort</label>
+            <select id="sortBy" class="w-full mt-2 bg-white/6 rounded px-3 py-2 text-sm">
+              <option value="popularity">Most Popular</option>
+              <option value="ratingDesc">Rating: High to Low</option>
+              <option value="ratingAsc">Rating: Low to High</option>
+              <option value="newest">Newest</option>
+            </select>
+          </div>
+
+          <div class="pt-2">
+            <button id="resetFilters" class="w-full bg-rose-500 hover:bg-rose-600 transition px-3 py-2 rounded">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-3">
+        <section class="mb-6">
+          <h2 class="text-2xl font-bold">Latest Reviews</h2>
+          <p class="text-sm text-gray-300 mt-1">Browse curated reviews and add your own. Click any poster for details.</p>
+        </section>
+
+        <section id="moviesGrid" class="w-full max-w-none grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <!-- Movie cards injected by JS -->
+        </section>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- MOVIE DETAIL MODAL -->
+  <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-6 z-50">
+    <div class="w-full max-w-none md:w-3/4 bg-gradient-to-br from-slate-800 to-indigo-900 rounded-xl overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0" role="dialog">
+      <div class="flex flex-col md:flex-row w-full">
+        <div class="w-full md:w-1/3 p-4 bg-gradient-to-b from-slate-900/40 to-transparent">
+          <img id="modalPoster" class="w-full h-72 object-cover rounded-lg shadow-lg" src="https://images.unsplash.com/photo-1707455259571-f89ac2ac70ab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODkyNDZ8MHwxfHNlYXJjaHwxMHx8QSUyMGRyYW1hdGljJTIwbW92aWUlMjBwb3N0ZXIlMjB3aXRoJTIwY2luZW1hdGljJTIwbGlnaHRpbmclMkMlMjBjbG9zZS11cCUyMG9mJTIwYSUyMGNpdHklMjBza3lsaW5lJTIwYXQlMjBuaWdodCUyMHdpdGglMjBuZW9uJTIwcmVmbGVjdGlvbnMlMjBhbmQlMjBhJTIwc2lsaG91ZXR0ZWQlMjBsZWFkJTIwYWN0b3J8ZW58MHwwfHx8MTc1NTI2OTI5Mnww&ixlib=rb-4.1.0&q=80&w=1080" alt="poster">
+        </div>
+        <div class="w-full md:w-2/3 p-6">
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 id="modalTitle" class="text-2xl font-bold">Movie Title</h3>
+              <div id="modalMeta" class="text-sm text-gray-300 mt-1">Year • Genres • Duration</div>
+            </div>
+            <div class="text-right">
+              <div id="modalAvgRating" class="text-xl font-semibold text-amber-400">4.5 ★</div>
+              <div class="text-xs text-gray-400">(based on <span id="modalReviewCount">0</span> reviews)</div>
+            </div>
+          </div>
+
+          <p id="modalDesc" class="mt-4 text-gray-200">Full description goes here. This area explains plot, themes and review summary.</p>
+
+          <div class="mt-6">
+            <h4 class="font-semibold">Reviews</h4>
+            <div id="reviewsList" class="mt-3 space-y-3 max-h-44 overflow-auto pr-2"></div>
+
+            <div class="mt-4 border-t border-white/5 pt-4">
+              <h5 class="text-sm font-medium">Add your review</h5>
+              <div class="flex items-center mt-2 space-x-3">
+                <div id="newRating" class="flex space-x-1 text-amber-400">
+                  <!-- stars injected -->
+                </div>
+                <textarea id="newReviewText" class="w-full bg-white/6 rounded px-3 py-2 text-sm h-20 resize-none" placeholder="Share your thoughts..."></textarea>
+              </div>
+              <div class="flex justify-end mt-3 space-x-2">
+                <button id="closeModal" class="px-3 py-2 bg-white/6 rounded hover:bg-white/10 transition">Close</button>
+                <button id="submitReview" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded transition">Submit Review</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="w-full max-w-none mt-12 border-t border-white/5 py-6 px-6 text-sm text-gray-400 flex flex-col md:flex-row justify-between items-center">
+    <div>CineScope © <span id="year"></span> • Crafted with a love for film</div>
+    <div class="mt-3 md:mt-0">Follow us: <a class="text-indigo-300 hover:underline ml-2" href="#">@cinescope</a></div>
+  </footer>
+
+  <script>
+    // Basic dataset
+    const sampleMovies = [
+      {
+        id: 'm1',
+        title: 'Inception',
+        year: 2010,
+        genres: ['Sci-Fi','Thriller'],
+        duration: '2h 28m',
+        popularity: 98,
+        poster: 'https://images.unsplash.com/photo-1614461272366-56eb9b2bb92a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODkyNDZ8MHwxfHNlYXJjaHw3fHxBJTIwbW9vZHklMjBJbmNlcHRpb24tc3R5bGUlMjBwb3N0ZXIlMjB3aXRoJTIwbGF5ZXJlZCUyMGNpdHlzY2FwZXMlMjBmb2xkaW5nJTIwaW50byUyMGVhY2glMjBvdGhlciUyQyUyMGRhcmslMjBibHVlJTIwYW5kJTIwZ29sZCUyMHRvbmVzfGVufDB8MHx8fDE3NTUyNjkyOTV8MA&ixlib=rb-4.1.0&q=80&w=1080',
+        description: 'A skilled thief who steals corporate secrets through dream-sharing technology is given the inverse task of planting an idea into the mind of a CEO.',
+        reviews: [
+          {name: 'Ava', rating: 5, text: 'Mind-bending and beautifully executed.'},
+          {name: 'Jon', rating: 4.5, text: 'Complex but rewarding.'}
+        ]
+      },
+      {
+        id: 'm2',
+        title: 'Spirited Away',
+        year: 2001,
+        genres: ['Animation','Fantasy'],
+        duration: '2h 5m',
+        popularity: 92,
+        poster: 'https://images.unsplash.com/photo-1631031911491-75de130f4a6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODkyNDZ8MHwxfHNlYXJjaHw1fHxBJTIwd2hpbXNpY2FsJTIwU3Bpcml0ZWQlMjBBd2F5LWluc3BpcmVkJTIwcG9zdGVyJTIwd2l0aCUyMGElMjBteXN0ZXJpb3VzJTIwYmF0aGhvdXNlJTIwbGl0JTIwaW4lMjB3YXJtJTIwbGFudGVybiUyMGxpZ2h0JTJDJTIwY3V0ZSUyMHNwaXJpdCUyMGNoYXJhY3RlcnN8ZW58MHwwfHx8MTc1NTI2OTMwMnww&ixlib=rb-4.1.0&q=80&w=1080',
+        description: 'During her family\'s move to the suburbs, a sullen 10-year-old girl wanders into a world ruled by gods, witches, and spirits.',
+        reviews: [
+          {name: 'Lina', rating: 5, text: 'A masterpiece of imagination and heart.'}
+        ]
+      },
+      {
+        id: 'm3',
+        title: 'The Dark Knight',
+        year: 2008,
+        genres: ['Action','Crime'],
+        duration: '2h 32m',
+        popularity: 97,
+        poster: 'https://pixabay.com/get/gccb4902ea128dfac15d4ba5e0185f8f9592877acd58fed6cb9fb8eeb3a81012e15264ca72e248ba0cf98cc8f0593c17d18d215df327bc9844d9c322706aeb8b7_640.jpg',
+        description: 'Batman sets out to dismantle the remaining criminal organizations that plague Gotham, but he finds himself prey to a rising criminal mastermind known as the Joker.',
+        reviews: [
+          {name: 'Marcus', rating: 5, text: 'Intense and unforgettable.'},
+          {name: 'Elle', rating: 4.5, text: 'Heath Ledger\'s Joker is iconic.'}
+        ]
+      },
+      {
+        id: 'm4',
+        title: 'Parasite',
+        year: 2019,
+        genres: ['Drama','Thriller'],
+        duration: '2h 12m',
+        popularity: 90,
+        poster: 'https://pixabay.com/get/ga90a52fa68f597fb16949b5a0ab4d4c5214a60c23be2e581e105b523c3245ce535c57d98e7f051167c2cac66346dc81a07a1ab880b0ca2df1cbc7f915e858cff_640.jpg',
+        description: 'A poor family schemes to become employed by a wealthy family by infiltrating their household and posing as unrelated, highly qualified individuals.',
+        reviews: [
+          {name: 'Ravi', rating: 5, text: 'A brilliant social satire.'}
+        ]
+      },
+      {
+        id: 'm5',
+        title: 'The Grand Budapest Hotel',
+        year: 2014,
+        genres: ['Comedy','Drama'],
+        duration: '1h 39m',
+        popularity: 85,
+        poster: 'https://images.unsplash.com/photo-1641417409350-447a8df6fb85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODkyNDZ8MHwxfHNlYXJjaHw3fHxBJTIwcGFzdGVsJTIwR3JhbmQlMjBCdWRhcGVzdCUyMEhvdGVsLWluc3BpcmVkJTIwcG9zdGVyJTIwd2l0aCUyMG9ybmF0ZSUyMGFyY2hpdGVjdHVyZSUyMGFuZCUyMHdoaW1zaWNhbCUyMGNoYXJhY3RlcnN8ZW58MHwwfHx8MTc1NTI2OTMwNXww&ixlib=rb-4.1.0&q=80&w=1080',
+        description: 'A writer encounters the owner of a famous European hotel and learns the story of the hotel\'s concierge and his adventures between the wars.',
+        reviews: [
+          {name: 'Maya', rating: 4.5, text: 'Visually delightful and witty.'}
+        ]
+      }
+    ];
+
+    // Utilities
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    // App state
+    let movies = JSON.parse(localStorage.getItem('cs_movies')) || sampleMovies;
+    // Ensure we merge stored reviews with base movies by id if needed
+    function persistMovies(){ localStorage.setItem('cs_movies', JSON.stringify(movies)); }
+
+    // Populate genres
+    function populateGenres(){
+      const genres = new Set();
+      movies.forEach(m => m.genres.forEach(g => genres.add(g)));
+      const sel = $('#genreFilter');
+      // Keep existing selection if any
+      const cur = sel.value || 'all';
+      sel.innerHTML = '<option value="all">All Genres</option>' + Array.from(genres).sort().map(g => `<option value="${g}">${g}</option>`).join('');
+      sel.value = cur;
+    }
+
+    // Compute average rating
+    function avgRating(reviews){ if(!reviews || reviews.length===0) return 0; return Math.round(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length*10)/10; }
+
+    // Render movie cards
+    function renderMovies(filterText = ''){
+      const grid = $('#moviesGrid');
+      grid.innerHTML = '';
+      const genre = $('#genreFilter').value;
+      const minR = parseFloat($('#minRating').value);
+      const sortBy = $('#sortBy').value;
+
+      let list = movies.filter(m => {
+        const matchesText = m.title.toLowerCase().includes(filterText.toLowerCase());
+        const matchesGenre = (genre === 'all') || m.genres.includes(genre);
+        const ar = avgRating(m.reviews);
+        const matchesRating = ar >= minR;
+        return matchesText && matchesGenre && matchesRating;
+      });
+
+      if(sortBy === 'popularity') list.sort((a,b)=>b.popularity - a.popularity);
+      if(sortBy === 'ratingDesc') list.sort((a,b)=>avgRating(b.reviews)-avgRating(a.reviews));
+      if(sortBy === 'ratingAsc') list.sort((a,b)=>avgRating(a.reviews)-avgRating(b.reviews));
+      if(sortBy === 'newest') list.sort((a,b)=>b.year - a.year);
+
+      list.forEach(movie => {
+        const card = document.createElement('article');
+        card.className = 'bg-gradient-to-b from-slate-800 to-slate-900 rounded-xl overflow-hidden shadow hover:scale-[1.02] transition transform';
+        card.innerHTML = `
+          <div class="relative">
+            <img src="${movie.poster}" alt="${movie.title}" class="w-full h-64 object-cover" />
+            <div class="absolute left-3 top-3 px-2 py-1 bg-black/50 rounded text-xs">${movie.year}</div>
+            <div class="absolute right-3 bottom-3 bg-black/60 px-3 py-1 rounded text-amber-400 font-semibold">${avgRating(movie.reviews) || '—'} ★</div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-semibold text-lg">${movie.title}</h3>
+            <div class="text-sm text-gray-400 mt-1">${movie.genres.join(' • ')}</div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="text-sm text-gray-300">${movie.duration}</div>
+              <div class="flex items-center space-x-2">
+                <button data-id="${movie.id}" class="openBtn px-3 py-1 bg-indigo-600 hover:bg-indigo-700 rounded text-sm transition">Details</button>
+                <button data-id="${movie.id}" class="favBtn px-3 py-1 bg-white/6 hover:bg-white/10 rounded text-sm transition">Add review</button>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      // Attach events
+      $$('.openBtn').forEach(btn => btn.addEventListener('click', (e)=> openModal(e.target.dataset.id)));
+      $$('.favBtn').forEach(btn => btn.addEventListener('click', (e)=> openModal(e.target.dataset.id)));
+    }
+
+    // Search handlers
+    $('#quickSearch').addEventListener('input', (e)=> renderMovies(e.target.value));
+    $('#genreFilter').addEventListener('change', ()=> renderMovies($('#quickSearch').value));
+    $('#minRating').addEventListener('input', (e)=> { $('#minRatingLabel').textContent = e.target.value; renderMovies($('#quickSearch').value); });
+    $('#sortBy').addEventListener('change', ()=> renderMovies($('#quickSearch').value));
+    $('#resetFilters').addEventListener('click', ()=>{
+      $('#genreFilter').value = 'all'; $('#minRating').value = 0; $('#minRatingLabel').textContent = 0; $('#sortBy').value = 'popularity'; $('#quickSearch').value = ''; renderMovies();
+    });
+
+    // Modal handling
+    const modal = $('#modal');
+    let activeMovieId = null;
+
+    function openModal(id){
+      const m = movies.find(x=>x.id===id);
+      if(!m) return;
+      activeMovieId = id;
+      $('#modalPoster').src = m.poster;
+      $('#modalTitle').textContent = m.title;
+      $('#modalMeta').textContent = `${m.year} • ${m.genres.join(' • ')} • ${m.duration}`;
+      $('#modalDesc').textContent = m.description;
+      $('#modalAvgRating').textContent = `${avgRating(m.reviews) || '—'} ★`;
+      $('#modalReviewCount').textContent = m.reviews.length;
+
+      renderReviews(m.reviews || []);
+      initNewRating();
+
+      modal.classList.remove('hidden');
+      setTimeout(()=>{
+        modal.querySelector('div[role=dialog]').classList.remove('opacity-0','scale-95');
+        modal.querySelector('div[role=dialog]').classList.add('opacity-100','scale-100');
+      },10);
+    }
+
+    function closeModal(){
+      const dlg = modal.querySelector('div[role=dialog]');
+      dlg.classList.add('opacity-0','scale-95');
+      setTimeout(()=>{ modal.classList.add('hidden'); }, 220);
+    }
+
+    $('#closeModal').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+
+    function renderReviews(reviews){
+      const container = $('#reviewsList');
+      container.innerHTML = '';
+      if(!reviews || reviews.length===0){ container.innerHTML = '<div class="text-sm text-gray-400">No reviews yet. Be the first!</div>'; return; }
+      reviews.slice().reverse().forEach(r => {
+        const el = document.createElement('div');
+        el.className = 'bg-white/5 p-3 rounded';
+        el.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-semibold">${r.name || 'Anonymous'}</div>
+              <div class="text-xs text-gray-300 mt-0.5">${r.text}</div>
+            </div>
+            <div class="text-amber-400 font-semibold">${r.rating} ★</div>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    // New review rating UI
+    let pendingRating = 5;
+    function initNewRating(){
+      pendingRating = 5;
+      const rdiv = $('#newRating');
+      rdiv.innerHTML = '';
+      for(let i=1;i<=5;i++){
+        const star = document.createElement('button');
+        star.className = 'text-amber-300 hover:scale-110 transition transform';
+        star.type = 'button';
+        star.innerHTML = i <= pendingRating ? '★' : '☆';
+        star.dataset.value = i;
+        star.addEventListener('click',(e)=>{
+          pendingRating = parseInt(e.target.dataset.value);
+          updateStars();
+        });
+        rdiv.appendChild(star);
+      }
+      function updateStars(){
+        Array.from(rdiv.children).forEach((c, idx)=> c.innerHTML = (idx < pendingRating) ? '★' : '☆');
+      }
+      updateStars();
+    }
+
+    $('#submitReview').addEventListener('click', ()=>{
+      const text = $('#newReviewText').value.trim();
+      if(!text){ alert('Please enter a short review.'); return; }
+      const movie = movies.find(m=>m.id===activeMovieId);
+      if(!movie) return;
+      movie.reviews = movie.reviews || [];
+      movie.reviews.push({ name: 'You', rating: pendingRating, text });
+      persistMovies();
+      $('#newReviewText').value = '';
+      $('#modalAvgRating').textContent = `${avgRating(movie.reviews)} ★`;
+      $('#modalReviewCount').textContent = movie.reviews.length;
+      renderReviews(movie.reviews);
+      renderMovies($('#quickSearch').value);
+    });
+
+    // Theme toggle (simple invert)
+    let dark = true;
+    $('#themeToggle').addEventListener('click', ()=>{
+      dark = !dark;
+      if(dark){ document.documentElement.classList.remove('light'); document.body.classList.remove('bg-gray-50','text-gray-900'); document.body.classList.add('bg-gray-900','text-gray-100'); }
+      else{ document.documentElement.classList.add('light'); document.body.classList.remove('bg-gray-900','text-gray-100'); document.body.classList.add('bg-gray-50','text-gray-900'); }
+    });
+
+    // On load
+    document.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('year').textContent = new Date().getFullYear();
+      populateGenres();
+      renderMovies();
+    });
+
+  </script>
+</body>
+</html>
